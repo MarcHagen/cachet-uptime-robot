@@ -105,6 +105,16 @@ class CachetHq(object):
 
         return switcher.get(status_id, "Invalid status")
 
+    def get_cachet_incident_status_name(self, status_id):
+        switcher = {
+            self.CACHET_INCIDENT_INVESTIGATING: "Investigating",
+            self.CACHET_INCIDENT_IDENTIFIED: "Identified",
+            self.CACHET_INCIDENT_WATCHING: "Watching",
+            self.CACHET_INCIDENT_FIXED: "Fixed"
+        }
+
+        return switcher.get(status_id, "Invalid incident status")
+
     def update_component(self, id_component=1, status=None):
         component_status = None
 
