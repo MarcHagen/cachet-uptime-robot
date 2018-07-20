@@ -140,7 +140,7 @@ class CachetHq(object):
                self.get_version() < LooseVersion('2.4'):
 
                 logger.info(
-                    'No status change on component "%s". Skipping update.',
+                    'No global status change on component "%s". Skipping update.',
                     current_component_data.get('name')
                 )
                 return
@@ -385,9 +385,8 @@ class Monitor(object):
             for monitor in monitors:
                 if monitor['id'] in self.monitor_list:
                     logger.info(
-                        'Checking monitor %s. URL: %s. ID: %s',
+                        'Checking monitor "%s" (ID: %s)',
                         monitor['friendly_name'],
-                        monitor['url'],
                         monitor['id']
                     )
                     try:
@@ -486,7 +485,7 @@ def parse_config(config_file):
         logger.error('File path is not valid')
         sys.exit(1)
 
-    if config.get('DEFAULT', 'Debugger'):
+    if config.get('DEFAULT', 'Debugger', fallback=0):
         logger.setLevel(logging.DEBUG)
 
     uptime_robot_api_key = None
