@@ -258,7 +258,7 @@ class CachetHq(object):
         return data
 
     def _request(self, method, url, data=None):
-        logger.info('HTTP %s URL: %s', method, url)
+        logger.debug('HTTP %s URL: %s', method, url)
 
         if data:
             data = parse.urlencode(data).encode('utf-8')
@@ -355,7 +355,10 @@ class Monitor(object):
                             monitor['friendly_name']
                         )
         else:
-            logger.error('No data was returned from UptimeMonitor')
+            logger.error(
+                'ERROR: Wrong data was returned from UptimeRobot: %s',
+                response.get('error', {}).get('message', 'No error returned...')
+            )
 
     def _log_unknown_monitors(self, monitors):
         configured_monitors = set(self.monitor_list.keys())
@@ -401,7 +404,10 @@ def main():
                     monitor['id'],
                 ))
         else:
-            print('ERROR: No data was returned from UptimeMonitor')
+            print(
+                'ERROR: Wrong data was returned from UptimeRobot: %s',
+                response.get('errorr', {}).get('message', 'No error returned...')
+            )
         sys.exit(1)
 
     Monitor(monitor_list=monitor_dict, api_key=uptime_robot_api_key, cachet=cachet).update()
