@@ -117,5 +117,14 @@ def monitor(monitor_list):
 def cachet():
     return update_status.CachetHq(
         cachet_api_key='CACHET_API_KEY',
-        cachet_url='CACHET_URL'
+        cachet_url='CACHET_URL',
+        cachet_create_incidents=True,
+        cachet_incidents_template_id=1
     )
+
+
+@pytest.fixture
+def request_version(version):
+    return {
+        'data': version
+    }

@@ -34,7 +34,7 @@ class UptimeRobot(object):
             # responseTimes - optional (defines if the response time data of each
             # monitor will be returned. Should be set to 1 for getting them.
             # Default is 0)
-            'response_times': format(response_times),
+            # 'response_times': format(response_times), UptimeRobot is broken ATM....
             # logs - optional (defines if the logs of each monitor will be
             # returned. Should be set to 1 for getting the logs. Default is 0)
             'logs': format(logs),
@@ -92,9 +92,7 @@ class CachetHq(object):
         self.cachet_url = cachet_url
         self.cachet_create_incidents = cachet_create_incidents
         self.cachet_incidents_template_id = cachet_incidents_template_id
-
-        api_response_version = self._request('GET', '{0}/api/v1/{1}'.format(self.cachet_url, 'version'))
-        self.version = LooseVersion(api_response_version.get('data'))
+        self.version = None
 
     def get_cachet_status_name(self, status_id):
         switcher = {
@@ -128,7 +126,7 @@ class CachetHq(object):
             current_component_data = component.get('data', {})
             current_component_status = int(current_component_data.get('status'))
 
-            if current_component_status == component_status and self.version < LooseVersion('2.4'):
+            if current_component_status == component_status and self.get_version() < LooseVersion('2.4'):
                 logger.info(
                     'No status change on component %s. Skipping update.',
                     id_component
@@ -147,7 +145,9 @@ class CachetHq(object):
                 data_incident = {
                     'component_id': id_component,
                     'component_status': component_status,
-                    'name': 'Service: {0} - Status: {1}'.format(current_component_data.get('name'), self.get_cachet_status_name(component_status)),
+                    'name': 'Service: {0} - Status: {1}'.format(
+                        current_component_data.get('name'),
+                        self.get_cachet_status_name(component_status)),
                     'message': 'Details TBD',
                     'status': self.CACHET_INCIDENT_INVESTIGATING,
                     'visible': 1
@@ -261,6 +261,13 @@ class CachetHq(object):
             }
 
         return data
+
+    def get_version(self):
+        if self.version is None:
+            api_response_version = self._request('GET', '{0}/api/v1/{1}'.format(self.cachet_url, 'version'))
+            self.version = LooseVersion(api_response_version.get('data'))
+
+        return self.version
 
     def _request(self, method, url, data=None):
         logger.debug('HTTP %s URL: %s', method, url)
