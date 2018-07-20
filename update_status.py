@@ -19,6 +19,7 @@ USER_AGENT = 'CachetUptimeRobotIntegration'
 class UptimeRobot(object):
     """ Intermediate class for setting uptime stats.
     """
+
     def __init__(self, api_key):
         self.api_key = api_key
         self.base_url = 'https://api.uptimerobot.com/v2/getMonitors'
@@ -34,7 +35,7 @@ class UptimeRobot(object):
             # responseTimes - optional (defines if the response time data of each
             # monitor will be returned. Should be set to 1 for getting them.
             # Default is 0)
-            # 'response_times': format(response_times), UptimeRobot is broken ATM....
+            'response_times': format(response_times),
             # logs - optional (defines if the logs of each monitor will be
             # returned. Should be set to 1 for getting the logs. Default is 0)
             'logs': format(logs),
@@ -129,8 +130,8 @@ class CachetHq(object):
                self.get_version() < LooseVersion('2.4'):
 
                 logger.info(
-                    'No status change on component %s. Skipping update.',
-                    id_component
+                    'No status change on component "%s". Skipping update.',
+                    current_component_data['name']
                 )
                 return
 
@@ -325,6 +326,7 @@ class Monitor(object):
         website_config = self._get_website_config(monitor)
         latest_metric = cachet.get_last_metric_point(website_config['metric_id'])
 
+        logger.info(monitor['response_times'])
         logger.info('Number of response times: %d', len(monitor['response_times']))
         logger.info('Latest metric: %s', latest_metric)
         unixtime = self._date_str_to_unixtime(latest_metric['created_at'])
