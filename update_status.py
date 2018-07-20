@@ -141,7 +141,7 @@ class CachetHq(object):
 
                 logger.info(
                     'No status change on component "%s". Skipping update.',
-                    current_component_data['name']
+                    current_component_data.get('name')
                 )
                 return
 
@@ -165,7 +165,7 @@ class CachetHq(object):
 
             api_response_incident = {}
             if component_status in [self.CACHET_PERFORMANCE_ISSUES, self.CACHET_SEEMS_DOWN, self.CACHET_DOWN]:
-                url_incident = '{0}/api/v1/incidents'.format(self.cachet_url)
+                url_incident = '{0}/api/v1/{1}'.format(self.cachet_url, 'incidents')
 
                 data_incident = {
                     'component_id': id_component,
@@ -214,12 +214,14 @@ class CachetHq(object):
                     api_response_incident = self._request('PUT', url_incident, data_incident)
 
                     logger.info(
-                        'Updated incident %s (from component %s) status: %s.',
+                        'Updated incident "%s" (from component "%s") from %s -> %s.',
                         id_incident,
-                        id_component,
-                        self.get_cachet_status_name(self.CACHET_INCIDENT_FIXED),
+                        current_component_data.get('name'),
+                        self.get_cachet_incident_status_name(last_incident.get('status')),
+                        self.get_cachet_incident_status_name(self.CACHET_INCIDENT_FIXED),
                     )
-                return api_response_incident
+
+            return api_response_incident
 
     def get_component(self, id_component):
         url = '{0}/api/v1/components/{1}'.format(
@@ -383,7 +385,7 @@ class Monitor(object):
             for monitor in monitors:
                 if monitor['id'] in self.monitor_list:
                     logger.info(
-                        'Updating monitor %s. URL: %s. ID: %s',
+                        'Checking monitor %s. URL: %s. ID: %s',
                         monitor['friendly_name'],
                         monitor['url'],
                         monitor['id']
@@ -392,7 +394,7 @@ class Monitor(object):
                         self.send_data_to_cachet(monitor)
                     except Exception:
                         logging.exception(
-                            'Exception raised when updating monitor %s',
+                            'Exception raised when checking monitor %s',
                             monitor['friendly_name']
                         )
         else:
@@ -504,7 +506,7 @@ def parse_config(config_file):
 
             cachet_api_key = cachet_conf.get('CachetApiKey')
             cachet_url = cachet_conf.get('CachetUrl')
-            cachet_create_incidents = cachet_conf.get('UseIncidentTemplateId', False)
+            cachet_create_incidents = cachet_conf.get('AutomaticallyCreateIncidents', False)
             cachet_incidents_template_id = cachet_conf.get('UseIncidentTemplateId', False)
         else:
             element_int = int(element)
