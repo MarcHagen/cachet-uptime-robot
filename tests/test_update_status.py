@@ -1,6 +1,27 @@
+import unittest
 import unittest.mock as mock
 import pytest
 import update_status
+
+
+class TestCachetHq(unittest.TestCase):
+    def test_get_cachet_status_name(self):
+        this_cachet = cachet()
+        self.assertEqual(this_cachet.get_cachet_status_name(this_cachet.CACHET_OPERATIONAL), 'Operational')
+        self.assertEqual(this_cachet.get_cachet_status_name(this_cachet.CACHET_PERFORMANCE_ISSUES),
+                         'Performance Issues')
+        self.assertEqual(this_cachet.get_cachet_status_name(this_cachet.CACHET_SEEMS_DOWN), 'Seems Down')
+        self.assertEqual(this_cachet.get_cachet_status_name(this_cachet.CACHET_DOWN), 'Down')
+
+    @mock.patch('update_status.CachetHq._request')
+    def test_get_version(self, mock_get):
+        mock_get.return_value = {
+            'data': '2.3.15'
+        }
+
+        version = cachet().get_version()
+        mock_get.assert_called_once()
+        self.assertEqual('2.3.15', version)
 
 
 class TestMonitor(object):
@@ -14,20 +35,6 @@ class TestMonitor(object):
         cachet().update_component.assert_called_with(
             website_config['component_id'],
             int(uptimerobot_monitor['status'])
-        )
-
-    @pytest.mark.skip
-    def test_send_data_to_cachet_updates_data_metrics(self, monitor, uptimerobot_monitor):
-        website_config = monitor.monitor_list[uptimerobot_monitor['id']]
-
-        with mock.patch('update_status.CachetHq') as cachet:
-            monitor.sync_metric = lambda x, y: None
-            monitor.send_data_to_cachet(uptimerobot_monitor)
-
-        cachet().set_data_metrics.assert_called_with(
-            uptimerobot_monitor['custom_uptime_ratio'],
-            mock.ANY,
-            website_config['metric_id']
         )
 
     def test_sync_metric(self, monitor, cachet, uptimerobot_monitor, cachet_metric):
@@ -121,10 +128,3 @@ def cachet():
         cachet_create_incidents=True,
         cachet_incidents_template_id=1
     )
-
-
-@pytest.fixture
-def request_version(version):
-    return {
-        'data': version
-    }
