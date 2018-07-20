@@ -122,36 +122,41 @@ class CachetHq(object):
         if component_status:
             component = self.get_component(id_component)
 
-            # logger.info(component)
             current_component_data = component.get('data', {})
             current_component_status = int(current_component_data.get('status'))
 
-            if current_component_status == component_status and self.get_version() < LooseVersion('2.4'):
+            if current_component_status == component_status and \
+               self.get_version() < LooseVersion('2.4'):
+
                 logger.info(
                     'No status change on component %s. Skipping update.',
                     id_component
                 )
                 return
 
+            if not self.cachet_create_incidents:
+                return
+
             api_response_incident = {}
-
             if component_status in [self.CACHET_PERFORMANCE_ISSUES, self.CACHET_SEEMS_DOWN, self.CACHET_DOWN]:
-
-                url_incident = '{0}/api/v1/{1}'.format(
-                    self.cachet_url,
-                    'incidents'
-                )
+                url_incident = '{0}/api/v1/incidents'.format(self.cachet_url)
 
                 data_incident = {
                     'component_id': id_component,
                     'component_status': component_status,
                     'name': 'Service: {0} - Status: {1}'.format(
                         current_component_data.get('name'),
-                        self.get_cachet_status_name(component_status)),
-                    'message': 'Details TBD',
+                        self.get_cachet_status_name(component_status)
+                    ),
+                    'message': 'Details to be continued...',
                     'status': self.CACHET_INCIDENT_INVESTIGATING,
                     'visible': 1
                 }
+
+                if self.cachet_incidents_template_id:
+                    # TODO create function to convert id to slug via API. Only avaible 2.4+
+                    data_incident['template'] = self.cachet_incidents_template_id
+                    del data_incident['message']
 
                 api_response_incident = self._request('POST', url_incident, data_incident)
 
@@ -162,9 +167,7 @@ class CachetHq(object):
                     self.CACHET_INCIDENT_INVESTIGATING,
                     api_response_incident.get('data').get('human_status')
                 )
-
             else:
-
                 last_incident = self.get_latest_component_incident(id_component)
 
                 if last_incident:
@@ -188,10 +191,9 @@ class CachetHq(object):
                         'Updated incident %s (from component %s) status: %s.',
                         id_incident,
                         id_component,
-                        self.CACHET_INCIDENT_FIXED,
+                        self.get_cachet_status_name(self.CACHET_INCIDENT_FIXED),
                     )
-
-            return api_response_incident
+                return api_response_incident
 
     def get_component(self, id_component):
         url = '{0}/api/v1/components/{1}'.format(
