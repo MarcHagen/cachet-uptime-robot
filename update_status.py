@@ -89,7 +89,6 @@ class CachetHq(object):
         self.cachet_api_key = cachet_api_key
         self.cachet_url = cachet_url
 
-
     def get_cachet_status_name(self, status_id):
         switcher = {
             self.CACHET_OPERATIONAL: "Operational",
@@ -99,7 +98,6 @@ class CachetHq(object):
         }
 
         return switcher.get(status_id, "Invalid status")
-
 
     def update_component(self, id_component=1, status=None):
         component_status = None
@@ -119,7 +117,7 @@ class CachetHq(object):
         if component_status:
             component = self.get_component(id_component)
 
-            #logger.info(component)
+            # logger.info(component)
             current_component_data = component.get('data', {})
             current_component_status = int(current_component_data.get('status'))
 

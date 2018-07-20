@@ -110,7 +110,7 @@ def uptimerobot_monitor(monitor_list):
 @pytest.fixture
 def monitor(monitor_list):
     api_key = 'UPTIME_ROBOT_API_KEY'
-    return update_status.Monitor(monitor_list, api_key)
+    return update_status.Monitor(monitor_list, api_key, cachet())
 
 
 @pytest.fixture
