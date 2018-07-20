@@ -50,7 +50,8 @@ class UptimeRobot(object):
             headers={
                 'Content-Type': 'application/x-www-form-urlencoded ',
                 'Cache-Control': 'no-cache',
-            },
+                'User-Agent': USER_AGENT,
+            }
         )
 
         # Verifying in the response is jsonp in otherwise is error
