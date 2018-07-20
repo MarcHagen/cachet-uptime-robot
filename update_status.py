@@ -146,7 +146,22 @@ class CachetHq(object):
                 return
 
             if not self.cachet_create_incidents:
-                return
+                logger.info(
+                    'Updating component "%s" status: %s -> %s.',
+                    current_component_data.get('name'),
+                    self.get_cachet_status_name(current_component_status),
+                    self.get_cachet_status_name(component_status)
+                )
+                url = '{0}/api/v1/{1}/{2}'.format(
+                    self.cachet_url,
+                    'components',
+                    id_component
+                )
+                data = {
+                    'status': component_status,
+                }
+
+                return self._request('PUT', url, data)
 
             api_response_incident = {}
             if component_status in [self.CACHET_PERFORMANCE_ISSUES, self.CACHET_SEEMS_DOWN, self.CACHET_DOWN]:
