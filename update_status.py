@@ -4,6 +4,7 @@ import configparser
 import json
 import logging
 import sys
+from distutils.version import LooseVersion
 from urllib import request
 from urllib import parse
 from datetime import datetime, timezone
@@ -92,6 +93,9 @@ class CachetHq(object):
         self.cachet_create_incidents = cachet_create_incidents
         self.cachet_incidents_template_id = cachet_incidents_template_id
 
+        api_response_version = self._request('GET', '{0}/api/v1/{1}'.format(self.cachet_url, 'version'))
+        self.version = LooseVersion(api_response_version.get('data'))
+
     def get_cachet_status_name(self, status_id):
         switcher = {
             self.CACHET_OPERATIONAL: "Operational",
@@ -124,9 +128,7 @@ class CachetHq(object):
             current_component_data = component.get('data', {})
             current_component_status = int(current_component_data.get('status'))
 
-            if current_component_status == component_status:
-                # FIXME: This is only necessary for CachetHQ <=2.3. Whenever we
-                # migrate to 2.4, we can remove this check.
+            if current_component_status == component_status and self.version < LooseVersion('2.4'):
                 logger.info(
                     'No status change on component %s. Skipping update.',
                     id_component
