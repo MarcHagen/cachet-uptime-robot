@@ -443,6 +443,9 @@ def parse_config(config_file):
         logger.error('File path is not valid')
         sys.exit(1)
 
+    if config.get('DEFAULT', 'Debugger'):
+        logger.setLevel(logging.DEBUG)
+
     uptime_robot_api_key = None
     monitor_dict = {}
     for element in config.sections():
