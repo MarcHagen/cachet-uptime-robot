@@ -86,9 +86,11 @@ class CachetHq(object):
     CACHET_INCIDENT_WATCHING = 3
     CACHET_INCIDENT_FIXED = 4
 
-    def __init__(self, cachet_api_key, cachet_url):
+    def __init__(self, cachet_api_key, cachet_url, cachet_create_incidents, cachet_incidents_template_id):
         self.cachet_api_key = cachet_api_key
         self.cachet_url = cachet_url
+        self.cachet_create_incidents = cachet_create_incidents
+        self.cachet_incidents_template_id = cachet_incidents_template_id
 
     def get_cachet_status_name(self, status_id):
         switcher = {
@@ -396,7 +398,7 @@ def main():
 
     if args.print_ids:
         uptime_robot = UptimeRobot(uptime_robot_api_key)
-        success, response = uptime_robot.get_monitors(response_times=1)
+        success, response = uptime_robot.get_monitors()
         if success:
             monitors = response.get('monitors')
             for monitor in monitors:
@@ -448,13 +450,24 @@ def parse_config(config_file):
         logger.setLevel(logging.DEBUG)
 
     uptime_robot_api_key = None
+
+    cachet_url = None
+    cachet_api_key = None
+    cachet_create_incidents = False
+    cachet_incidents_template_id = False
+
     monitor_dict = {}
+
     for element in config.sections():
         if element == 'uptimeRobot':
             uptime_robot_api_key = config[element]['UptimeRobotMainApiKey']
         elif element == 'cachet':
-            cachet_api_key = config[element]['CachetApiKey']
-            cachet_url = config[element]['CachetUrl']
+            cachet_conf = config[element]
+
+            cachet_api_key = cachet_conf.get('CachetApiKey')
+            cachet_url = cachet_conf.get('CachetUrl')
+            cachet_create_incidents = cachet_conf.get('UseIncidentTemplateId', False)
+            cachet_incidents_template_id = cachet_conf.get('UseIncidentTemplateId', False)
         else:
             element_int = int(element)
             monitor_dict[element_int] = {}
@@ -472,9 +485,23 @@ def parse_config(config_file):
                     'component_id': config[element].get('ComponentId'),
                 })
 
+    if uptime_robot_api_key is None:
+        logger.error('Missing UptimeRobotMainApiKey')
+        sys.exit(1)
+
+    if cachet_url is None:
+        logger.error('Missing CachetUrl')
+        sys.exit(1)
+
+    if cachet_api_key is None:
+        logger.error('Missing CachetApiKey')
+        sys.exit(1)
+
     cachet = CachetHq(
         cachet_api_key=cachet_api_key,
         cachet_url=cachet_url,
+        cachet_create_incidents=cachet_create_incidents,
+        cachet_incidents_template_id=cachet_incidents_template_id,
     )
 
     return monitor_dict, uptime_robot_api_key, cachet

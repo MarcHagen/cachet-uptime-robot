@@ -4,6 +4,8 @@ UptimeRobotMainApiKey = your-api-key
 [cachet]
 CachetApiKey = cachet-api-key
 CachetUrl = https://status.mycompany.com
+AutomaticallyCreateIncidents = True
+UseIncidentTemplateId = False
 
 [uptimeRobotMonitorID1]
 ComponentId = 1
